@@ -69,6 +69,11 @@ class PVD:
 
         mean = (pixel_1 + pixel_2) // 2
 
+        ascending = True
+
+        if pixel_1 > pixel_2:
+            ascending = False
+
         pixel_1 = mean - (value // 2)
         pixel_2 = mean + (value - value // 2)
 
@@ -85,7 +90,10 @@ class PVD:
             pixel_2 -= overshoot
         
         assert(pixel_1 >= 0 and pixel_2 <= 255)
-        return pixel_1.astype(np.uint8), pixel_2.astype(np.uint8)
+        if ascending:
+            return pixel_1.astype(np.uint8), pixel_2.astype(np.uint8)
+        else:
+            return pixel_2.astype(np.uint8), pixel_1.astype(np.uint8)
     
     def _get_quantization_range_lower(self, value):
         for (idx,elem) in enumerate(self.quantization_ranges):

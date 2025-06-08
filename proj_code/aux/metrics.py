@@ -89,7 +89,7 @@ class Metrics:
 
         COMPARISON_DISTRIBUTION = np.load(dir_dist)
         # valoare hardcodată, aleasă să fie puțin sub scorul cel mai mic al unei distribuții pentru o imagine PVD
-        THRESHOLD = np.float64(0.2)
+        THRESHOLD = np.float64(0.03)
 
         diffs = []
 
