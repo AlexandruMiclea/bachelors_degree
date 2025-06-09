@@ -10,7 +10,12 @@ class PhaseEncoding():
         self.file_path = file_path
         self.BLOCK_SIZE = block_size
 
-    def read_audio(self):
+    def _read_audio_from_path(self, file_path: str):
+        bitrate, file_content = wavfile.read(file_path)
+
+        return bitrate, file_content
+
+    def _read_audio(self):
         bitrate, file_content = wavfile.read(self.file_path)
 
         self.bitrate = bitrate
@@ -21,10 +26,10 @@ class PhaseEncoding():
 
         self.modified_file_content = file_content.copy()
 
-    def write_audio(self, out_path):
+    def _write_audio_to_path(self, out_path):
         wavfile.write(out_path, self.bitrate, self.return_audio_file)
 
-    def get_file_split_in_blocks(self):
+    def _get_file_split_in_blocks(self):
 
         size = self.modified_file_content.shape[0]
 
@@ -35,17 +40,17 @@ class PhaseEncoding():
 
         return np.reshape(self.modified_file_content, (segments, self.BLOCK_SIZE))
 
-    def restore_blocks_to_file(self, blocks: np.ndarray):
+    def _restore_blocks_to_file(self, blocks: np.ndarray):
 
         h, w = blocks.shape
         return blocks.reshape((h * w))
     
-    def apply_fft_to_blocks(self, blocks):
+    def _apply_fft_to_blocks(self, blocks):
 
         processed_blocks = np.fft.fft(blocks, axis = 1)
         return processed_blocks
     
-    def parse_message_bits_to_phase_shifts(self, message_bits: BitArray):
+    def _parse_message_bits_to_phase_shifts(self, message_bits: BitArray):
 
         phase_shifts = list()
 
@@ -60,15 +65,14 @@ class PhaseEncoding():
     def get_embedding_capacity(self, blocks: np.ndarray) -> np.int32:
         return blocks.shape[0] * 2 
     
-    def embed_bits_in_blocks(self, blocks: np.ndarray, message_bits: BitArray):
+    def _embed_bits_in_blocks(self, blocks: np.ndarray, message_bits: BitArray):
 
         magnitudes, phases = np.abs(blocks), np.angle(blocks)
 
-        phase_shifts = self.parse_message_bits_to_phase_shifts(message_bits)
+        phase_shifts = self._parse_message_bits_to_phase_shifts(message_bits)
         assert(len(phase_shifts) <= self.get_embedding_capacity(blocks))
 
         segment_middle = self.BLOCK_SIZE // 2
-
         
         new_phases = phases.copy()
 
@@ -84,7 +88,7 @@ class PhaseEncoding():
 
         return magnitudes, new_phases
 
-    def extract_bits_from_blocks(self, blocks: np.ndarray):
+    def _extract_bits_from_blocks(self, blocks: np.ndarray):
 
         magnitudes, phases = np.abs(blocks), np.angle(blocks)
         message = []
@@ -103,16 +107,16 @@ class PhaseEncoding():
 
         return message_bitarray
 
-    def embed_message(self, message_bits: BitArray):
+    def embed_message(self, message_bits: BitArray, out_path: str):
 
-        self.read_audio()
-        blocks = self.get_file_split_in_blocks()
-        fft_blocks = self.apply_fft_to_blocks(blocks)
-        magnitudes, new_phases = self.embed_bits_in_blocks(fft_blocks, message_bits)
+        self._read_audio()
+        blocks = self._get_file_split_in_blocks()
+        fft_blocks = self._apply_fft_to_blocks(blocks)
+        magnitudes, new_phases = self._embed_bits_in_blocks(fft_blocks, message_bits)
 
         new_audio_signal_blocks = np.fft.ifft(magnitudes * np.exp(1j * new_phases)).real
 
-        new_audio_signal = self.restore_blocks_to_file(new_audio_signal_blocks)
+        new_audio_signal = self._restore_blocks_to_file(new_audio_signal_blocks)
 
         new_audio_signal = new_audio_signal.astype(np.int16)
 
@@ -130,21 +134,23 @@ class PhaseEncoding():
 
         self.return_audio_file = return_audio_file
 
+        self._write_audio_to_path(out_path)
+
         return return_audio_file
     
-    def extract_message(self):
+    def extract_message(self, path: str):
 
-        audio_for_extraction = self.return_audio_file
+        _, audio_for_extraction = self._read_audio_from_path(path)
         
         if len(audio_for_extraction.shape) == 2:
             audio_for_extraction = audio_for_extraction[:,0]
 
         segments = int(np.ceil(audio_for_extraction.shape[0] / self.BLOCK_SIZE))
-            # pads the end of the file with zeroes
+
         audio_for_extraction_blocks = np.reshape(audio_for_extraction, (segments, self.BLOCK_SIZE))
 
-        audio_for_extraction_fft_blocks = self.apply_fft_to_blocks(audio_for_extraction_blocks)
+        audio_for_extraction_fft_blocks = self._apply_fft_to_blocks(audio_for_extraction_blocks)
 
-        return_message = self.extract_bits_from_blocks(audio_for_extraction_fft_blocks)
+        return_message = self._extract_bits_from_blocks(audio_for_extraction_fft_blocks)
 
         return return_message

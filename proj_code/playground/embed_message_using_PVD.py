@@ -1,5 +1,3 @@
-# TODO embed message in photos in path using PVD
-
 import copy
 from bitstring import BitArray
 import jpegio as jio
@@ -21,7 +19,7 @@ for (idx,photo) in enumerate(photos):
 
     embedding_capacity = model.get_embedding_capacity()
     # multiply with 0.05 and round so you create random bytes
-    embed_size_bytes = round(0.05 * embedding_capacity)
+    embed_size_bytes = round(0.03125 * embedding_capacity)
     # # generate 10k bytes and get only required bit amount
 
     random_bytes = os.urandom(embed_size_bytes)
