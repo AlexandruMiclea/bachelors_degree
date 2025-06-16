@@ -1,5 +1,3 @@
-# TODO documentează
-
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
@@ -29,7 +27,7 @@ class PVD:
 
     def _read_image(self) -> np.ndarray:
 
-        image_read = Image.open(self.file_path)
+        image_read = Image.open(self.file_path).convert("RGB")
         return np.array(image_read)
     
     def _get_pixel_differences(self, image: np.ndarray):

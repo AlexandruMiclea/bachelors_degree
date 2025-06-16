@@ -1,5 +1,3 @@
-# TODO documentează
-
 from bitstring import BitArray
 from .huffman_encoding import Huffman
 

@@ -1,5 +1,3 @@
-# TODO documentează
-
 import numpy as np
 import scipy.io.wavfile as wavfile
 from bitstring import BitArray
@@ -63,7 +61,7 @@ class PhaseEncoding():
         return np.array(phase_shifts)
 
     def get_embedding_capacity(self, blocks: np.ndarray) -> np.int32:
-        return blocks.shape[0] * 2 
+        return blocks.shape[0]
     
     def _embed_bits_in_blocks(self, blocks: np.ndarray, message_bits: BitArray):
 

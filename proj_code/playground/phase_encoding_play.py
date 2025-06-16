@@ -5,16 +5,16 @@ import matplotlib.pyplot as plt
 
 FREQ = 44100
 
-model = PhaseEncoding('/home/alexmiclea/Documents/Facultate/Licenta/audio/numbers/numbers.wav', 512)
-text_message = ''
+model = PhaseEncoding('/home/alexmiclea/Documents/Facultate/Licenta/audio/numbers/numbers.wav', 128)
+text_message = 'Acesta este un mesaj secret'
 message_bytes = text_message.encode()
 # print(message_bytes)
 message = BitArray(bytes = message_bytes)
 # print(message.bin)
 model.embed_message(message, '/home/alexmiclea/Documents/Facultate/Licenta/audio/numbers/numbers_embed.wav')
 
-x = model.original_file_content[:256]
-z = model.return_audio_file[:256]
+x = model.original_file_content[:128]
+z = model.return_audio_file[:128]
 
 print(x.shape)
 print(z.shape)
